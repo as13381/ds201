@@ -1,0 +1,201 @@
+---
+title: "Problem Set 1: Solutions"
+author: "Your Name - Net ID - Section Number "
+date: "Due Oct 6th, 2023"
+output:
+  pdf_document: default
+---
+
+This homework must be turned in on Brightspace by Oct 6th 2023. It must be your own work, and your own work only -- you must not copy anyone's work, or allow anyone to copy yours. This extends to writing code. \textbf{You may consult with others, but when you write up, you must do so alone.}
+
+Your homework submission must be written and submitted using Rmarkdown. No handwritten solutions will be accepted. You should submit:
+
+1. A compiled PDF file named yourNetID_solutions.pdf containing your solutions to the problems.
+
+2. A .Rmd file containing the code and text used to produce your compiled pdf named yourNetID_solutions.Rmd.
+
+
+Note that math can be typeset in Rmarkdown in the same way as Latex. Please make sure your answers are clearly structured in the Rmarkdown file:
+
+1. Label each question part
+
+2. Do not include written answers as code comments. Write out answers and explanations separately.
+
+3. The code used to obtain the answer for each question part should accompany the written answer. Comment your code!
+
+\newpage 
+
+# Question 1. Definitions and Examples (20 points)
+Answer the following questions. Be as specific and detailed as possible. Give examples.
+
+1. What is the fundamental problem of causal inference? (5 points)
+
+
+
+2. Why are experiments important? (5 points)
+
+
+
+3. What does ignorability mean? (5 points)
+
+
+
+4. What is SUTVA? (5 points)
+
+
+\newpage
+
+
+
+# Question 2. Bed Nets and Malaria (20 points)
+
+Article: Free Distribution or Cost-Sharing? Evidence from a Randomized Malaria Prevention Experiment
+by Jessica Cohen and Pascaline Dupas
+
+Some economists have argued that ``cost-sharing" makes it more likely that a product will be used (versus giving it away for free). Cohen and Dupas partnered with 20 Kenyan prenatal clinics to distribute subsidized anti-malarial bed nets. For each clinic, they varied the extent of the subsidy: either full (free bed-nets, $D_i = 1$) or partial (90\% cheaper bed-nets, $D_i = 0$). They measure (among other things) whether women who received bed nets used them ($Y_i$).
+
+
+1. What is $\mathbb{E}[Y_i | D_i = 0]$? (5 points)
+
+
+
+2. What is $\mathbb{E}[Y_i(1)]$? (5 points)
+
+
+
+3. What is $\mathbb{E}[Y_i(1) | D_i = 0]$? (5 points)
+
+
+
+4. Cohen and Dupas randomized treatment at the level of the clinic, but the outcomes of interest are at the individual level. Is there a violation of consistency/SUTVA? Why or why not? Argue your case. (5 points)
+
+
+
+
+\newpage
+
+# Question 3. Application (Coding) (30 points)
+The STAR (Student-Teacher Achievement Ratio) Project is a four year
+*longitudinal study* examining the effect of class size in early
+grade levels on educational performance and personal
+development.
+
+This exercise is in part based on\footnote{ I have provided you with a 
+sample of their larger dataset. Empirical conclusion drawn from this 
+sample may differ from their article.}:
+
+ Mosteller, Frederick. 1997. “[The Tennessee Study of Class Size in the 
+ Early School Grades.](http://dx.doi.org/10.2307/3824562)” *Bulletin of 
+ the American Academy of Arts and Sciences* 50(7): 14-25.
+  
+A longitudinal study is one in which the same
+participants are followed over time.  This particular study lasted
+from 1985 to 1989 involved 11,601 students. During the four years of
+the study, students were randomly assigned to small classes,
+regular-sized classes, or regular-sized classes with an aid.  In all,
+the experiment cost around $12 million. Even though the program
+stopped in 1989 after the first kindergarten class in the program
+finished third grade, collection of various measurements (e.g.,
+performance on tests in eighth grade, overall high school GPA)
+continued through the end of participants' high school attendance.
+
+We will analyze just a portion of this data to investigate whether the
+small class sizes improved performance or not. The data file name is
+`STAR.csv`, which is a CSV data file.  The names and
+descriptions of variables in this data set are:
+
+
+ Name                 Description
+ -------------------- ----------------------------------------------------------
+ `race`               Student's race (White = 1, Black = 2, Asian = 3, Hispanic = 4,  Native American = 5, Others = 6)
+ `classtype`          Type of kindergarten class (small = 1, regular = 2, regular with aid = 3)
+ `g4math`             Total scaled score for math portion of fourth grade standardized test 
+ `g4reading`          Total scaled score for reading portion of fourth grade standardized test 
+ `yearssmall`         Number of years in small classes 
+ `hsgrad`             High school graduation (did graduate = 1, did not graduate = 0) 
+ 
+Note that there are a fair amount of missing
+values in this data set.  For example, missing values arise because
+some students left a STAR school before third grade or did not enter a
+STAR school until first grade.
+
+1. Create a new factor variable called `kinder` in the data
+  frame.  This variable should recode `classtype` by changing
+  integer values to their corresponding informative labels (e.g.,
+  change 1 to `small` etc.).  Similarly, recode the
+  `race` variable into a factor variable with four levels
+  (`white`, `black`, `hispanic`, `others`) by
+  combining Asians and Native Americans as the `others`
+  category.  For the `race` variable, overwrite the original
+  variable in the data frame rather than creating a new one.  Recall
+  that `na.rm = TRUE` can be added to functions in order to
+  remove missing data. (5 points)
+
+```{r}
+library("tidyverse")
+STAR <- read.csv("STAR2.csv")
+
+STAR %>% mutate(kinder = factor(case_when(classtype == 1 ~ "small",
+                                          classtype == 2 ~ "regular",
+                                          as.default ~ "regular with aid")))
+
+
+                  
+```
+
+2. How does performance on fourth grade reading and math tests for
+  those students assigned to a small class in kindergarten compare
+  with those assigned to a regular-sized class?  Do students in the
+  smaller classes perform better?  Use means to make this comparison
+  while removing missing values.  Give a brief substantive
+  interpretation of the results.  To understand the size of the
+  estimated effects, compare them with the standard deviation of the
+  test scores. (10 points)
+ 
+```{r}
+ 
+
+ 
+```
+
+
+
+
+
+
+3. Instead of comparing just average scores of reading and math
+  tests between those students assigned to small classes and those
+  assigned to regular-sized classes, look at the entire range of
+  possible scores.  To do so, compare a high score, defined as the
+  66th percentile, and a low score (the 33rd percentile) for small
+  classes with the corresponding score for regular classes.  These are
+  examples of *quantile treatment effects*.  Does this analysis
+  add anything to the analysis based on mean in the previous question? 
+  (Hint: You will use the quantile() function in r.) (5 points)
+
+
+
+4. We examine whether the STAR program reduced the achievement gaps
+  across different racial groups.  Begin by comparing the average
+  reading and math test scores between white and minority students
+  (i.e., Blacks and Hispanics) among those students who were assigned
+  to regular classes with no aid.  Conduct the same comparison among
+  those students who were assigned to small classes.  Give a brief
+  substantive interpretation of the results of your analysis. (5 points)
+  
+  
+
+5. We consider the long term effects of kindergarten class size.
+  Compare high school graduation rates across students assigned to
+  different class types.  Also, examine whether graduation rates
+  differ by the number of years spent in small classes.  Finally, as
+  done in the previous question, investigate whether the STAR program
+  has reduced the racial gap between white and minority students'
+  graduation rates.  Briefly discuss the results. (5 points)
+
+
+
+\newpage
+## Question 4. Design Your Experiment (30 points)
+
+Design your own experiment from start to finish. Choose an *interesting* question. Explain why observational data may give you the wrong answer. Detail the potential outcomes and a well-defined treatment. Explain the type of experiment (completely random, cluster-design, block/stratified). Will your design ensure a causal treatment effect? (Remember: Be as specific as possible and give examples.)
