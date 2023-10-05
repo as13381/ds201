@@ -30,18 +30,19 @@ Answer the following questions. Be as specific and detailed as possible. Give ex
 
 1. What is the fundamental problem of causal inference? (5 points)
 
-The fundamental problem of causal inference is that it is impossible to observe the true individual treatment effect and therefore it is challenging to determine the causal effect of a treatment. This issue stems from the fact that it's impossible to observe both potential outcomes of treatment and control; if the unit receives the treatment it is impossible to observe the individual effect of the counterfactual (receiving no treatment) and vice versa.
+The fundamental problem of causal inference is that it is impossible to observe the individual treatment effect and therefore it is challenging to determine the causal effect of a treatment. This issue stems from the fact that it's impossible to observe both potential outcomes of treatment and control; if the unit receives the treatment it is impossible to observe the individual effect of the counterfactual (receiving no treatment) and vice versa.
 
 2. Why are experiments important? (5 points)
 
-Experiments, especially randomized controlled trials (RCTs) are the fundamental "solution" to the fundamental problem of causal inference. Experiments are studies where the researcher controls the probability of being assigned the treatment. One can engineer the experiment so that the requirements for average treatment effect (ATE) are met. The three requirements are SUTVA, positivity, and ignorability. SUTVA
+Experiments, especially randomized controlled trials (RCTs) are the fundamental "solution" to the fundamental problem of causal inference. Experiments are studies where the researcher controls the probability of being assigned the treatment. One can engineer the experiment so that the requirements for average treatment effect (ATE) are met. The three requirements are SUTVA, positivity, and ignorability.
 
 3. What does ignorability mean? (5 points)
 
-
+Ignorability, or unconfoundness refers to the treatment assignment being independent of the potential outcomes
 
 4. What is SUTVA? (5 points)
 
+SUTVA stands for Stable Unit Treatment Value Assumption. It is one of the requirements for the difference-in-means to be equal to the ATE. SUTVA calls for no spillover (or interference) and single value of treatment. No spillover means one unit's treatment status will not affect the potential outcome of other units. An example of a spillover violation is this: let's say you had a study on the efficacy of having a scarecrow on pest-related crop damage. You put a scarecrow in one field as the treatment, and leave a nearby nearly identical field untouched as control. However, since the scarecrow does manage to scare away some pestilent animals, these affected animals instead migrate to the scarecrow-free field increasing the pest damage in the control field. This is an example of spillover since the treatment affected the outcome of the control group. Single value of treatment refers to
 
 \newpage
 
@@ -156,14 +157,13 @@ STAR <- STAR %>%
   test scores. (10 points)
  
 ```{r}
- 
-print(mean(STAR$g4math[STAR$kinder == "small"], na.rm = T))
-print(mean(STAR$g4math[STAR$kinder == "regular"], na.rm = T))
-print(mean(STAR$g4math[STAR$kinder == "regular with aid"], na.rm = T))
 
-print(mean(STAR$g4reading[STAR$kinder == "small"], na.rm = T))
-print(mean(STAR$g4reading[STAR$kinder == "regular"], na.rm = T))
-print(mean(STAR$g4reading[STAR$kinder == "regular with aid"], na.rm = T))
+STAR %>%
+  group_by(kinder) %>%
+  summarise(`reading test mean` = mean(g4reading, na.rm = T),
+            `math test mean` = mean(g4math, na.rm = T),
+            `reading test sd` = sd(g4reading, na.rm = T),
+            `math test sd` = sd(g4math, na.rm = T))
  
 ```
 
@@ -182,7 +182,16 @@ print(mean(STAR$g4reading[STAR$kinder == "regular with aid"], na.rm = T))
   add anything to the analysis based on mean in the previous question? 
   (Hint: You will use the quantile() function in r.) (5 points)
 
+```{r}
 
+STAR %>%
+  group_by(kinder) %>%
+  summarise(`reading test 33rd pct` = quantile(g4reading, 0.33, na.rm = T),
+            `reading test 66th pct` = quantile(g4reading, 0.66, na.rm = T),
+            `math test 33rd pct` = quantile(g4math, 0.33, na.rm = T),
+            `math test 66th pct` = quantile(g4reading, 0.66, na.rm = T))
+
+```
 
 4. We examine whether the STAR program reduced the achievement gaps
   across different racial groups.  Begin by comparing the average
@@ -192,7 +201,15 @@ print(mean(STAR$g4reading[STAR$kinder == "regular with aid"], na.rm = T))
   those students who were assigned to small classes.  Give a brief
   substantive interpretation of the results of your analysis. (5 points)
   
-  
+```{r}
+
+STAR %>%
+  filter(kinder != 'regular with aid') %>%
+  group_by(kinder, race) %>%
+  summarise(`reading test mean` = mean(g4reading, na.rm = T),
+            `math test mean` = mean(g4math, na.rm = T))
+
+```
 
 5. We consider the long term effects of kindergarten class size.
   Compare high school graduation rates across students assigned to
@@ -202,7 +219,20 @@ print(mean(STAR$g4reading[STAR$kinder == "regular with aid"], na.rm = T))
   has reduced the racial gap between white and minority students'
   graduation rates.  Briefly discuss the results. (5 points)
 
+```{r}
 
+STAR %>%
+  group_by(kinder) %>%
+  summarise(`graduation rate` = mean(hsgrad, na.rm = T))
+
+```
+```{r}
+
+STAR %>%
+  group_by(yearssmall) %>%
+  summarise(`graduation rate` = mean(hsgrad, na.rm = T))
+
+```
 
 \newpage
 ## Question 4. Design Your Experiment (30 points)
