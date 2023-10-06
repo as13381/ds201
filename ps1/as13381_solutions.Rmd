@@ -34,11 +34,19 @@ The fundamental problem of causal inference is that it is (usually) impossible t
 
 2. Why are experiments important? (5 points)
 
+<<<<<<< HEAD
 Experiments, especially randomized controlled trials (RCTs), are the fundamental "solution" to the fundamental problem of causal inference. Experiments are studies where the researcher controls the probability of being assigned the treatment. One can engineer the experiment to meet two of the requirements for causal inference, ignorability and positivity. Through randomization both of these assumptions can be met; by randomizing, stratifying, etc. we can hopefully eliminate any confounding effects and also ensure every unit has a greater than 0 probability of being assigned to the treatment.
 
 3. What does ignorability mean? (5 points)
 
 Ignorability, or unconfoundedness refers to the treatment assignment being independent of the potential outcomes given some observed covariates. In other words, whether or not a case is assigned to treatment will not affect the case's potential outcome and any covariates which affect both treatment and outcome have been identified and controlled for. Here is an example of an ignorability violation: suppose you were carrying out a study to examine the effects of a exercise regimen on body weight. However, instead of randomly assigning participants to treatment and control groups, you allow the participants to choose themselves. One of the obvious issues with this is that people who voluntarily choose to participate in this weight-loss regimen are much more likely to already care about their body weight and actively try (even outside of the study) to lower their body weights. As a result their outcome is not independent from treatment assignment.
+=======
+Experiments, especially randomized controlled trials (RCTs) are the fundamental "solution" to the fundamental problem of causal inference. Experiments are studies where the researcher controls the probability of being assigned the treatment. One can engineer the experiment to meet the requirements for the difference-in-means to be equal to average treatment effect (ATE). The three requirements are SUTVA, positivity, and ignorability. When these requirements are satisfied, 
+
+3. What does ignorability mean? (5 points)
+
+Ignorability, or unconfoundedness refers to the treatment assignment being independent of the potential outcomes given some observed covariates. In other words, whether or not a case is assigned to treatment will not affect the case's potential outcome. Here is an example of an ignorability violation: suppose you were carrying out a study 
+>>>>>>> 816fa483d4346f2651c58f2ba269268c7cfca0df
 
 4. What is SUTVA? (5 points)
 
@@ -143,7 +151,7 @@ STAR <- STAR %>%
          race = factor(case_when(race == 1 ~ 'white',
                                  race == 2 ~ 'black',
                                  race == 4 ~ 'hispanic',
-                                 .default = 'others')))
+                                 .default = 'others'))) 
 
 head(STAR)
 
