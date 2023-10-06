@@ -30,19 +30,19 @@ Answer the following questions. Be as specific and detailed as possible. Give ex
 
 1. What is the fundamental problem of causal inference? (5 points)
 
-The fundamental problem of causal inference is that it is impossible to observe the individual treatment effect and therefore it is challenging to determine the causal effect of a treatment. This issue mainly stems from the fact that it's impossible to observe both potential outcomes of treatment and control; if the unit receives the treatment it is impossible to observe the individual effect of the counterfactual (receiving no treatment) and vice versa.
+The fundamental problem of causal inference is that it is (usually) impossible to observe both potential outcomes of treatment and control; if the unit receives the treatment it is impossible to observe the outcome of the counterfactual (receiving no treatment) since the unit has in fact received treatment and vice versa. For example, when testing the efficacy of a drug for every subject you can only see the outcome after receiving or not receiving the treatment as the subject can't both take and not take the drug.
 
 2. Why are experiments important? (5 points)
 
-Experiments, especially randomized controlled trials (RCTs) are the fundamental "solution" to the fundamental problem of causal inference. Experiments are studies where the researcher controls the probability of being assigned the treatment. One can engineer the experiment to meet the requirements for the difference-in-means to be equal to average treatment effect (ATE). The three requirements are SUTVA, positivity, and ignorability.
+Experiments, especially randomized controlled trials (RCTs), are the fundamental "solution" to the fundamental problem of causal inference. Experiments are studies where the researcher controls the probability of being assigned the treatment. One can engineer the experiment to meet two of the requirements for causal inference, ignorability and positivity. Through randomization both of these assumptions can be met; by randomizing, stratifying, etc. we can hopefully eliminate any confounding effects and also ensure every unit has a greater than 0 probability of being assigned to the treatment.
 
 3. What does ignorability mean? (5 points)
 
-Ignorability, or unconfoundedness refers to the treatment assignment being independent of the potential outcomes
+Ignorability, or unconfoundedness refers to the treatment assignment being independent of the potential outcomes given some observed covariates. In other words, whether or not a case is assigned to treatment will not affect the case's potential outcome and any covariates which affect both treatment and outcome have been identified and controlled for. Here is an example of an ignorability violation: suppose you were carrying out a study to examine the effects of a exercise regimen on body weight. However, instead of randomly assigning participants to treatment and control groups, you allow the participants to choose themselves. One of the obvious issues with this is that people who voluntarily choose to participate in this weight-loss regimen are much more likely to already care about their body weight and actively try (even outside of the study) to lower their body weights. As a result their outcome is not independent from treatment assignment.
 
 4. What is SUTVA? (5 points)
 
-SUTVA stands for Stable Unit Treatment Value Assumption. It is one of the requirements for the difference-in-means to be equal to the ATE. SUTVA calls for no spillover (or interference) and single value of treatment. No spillover means one unit's treatment status will not affect the potential outcome of other units. An example of a spillover violation is this: let's say you had a study on the efficacy of having a scarecrow on pest-related crop damage. You put a scarecrow in one field as the treatment, and leave a nearby nearly identical field untouched as control. However, since the scarecrow does manage to scare away some pestilent animals, these affected animals instead migrate to the scarecrow-free field increasing the pest damage in the control field. This is an example of spillover since the treatment affected the outcome of the control group. Single value of treatment refers to a single version of treatment for all treatments of the same level; in other words the process by which the treatment is given does not affect the treatment potential outcome. Here's an example of a single treatment value violation: imagine you conducted a study on the effect of psychological therapy on subjects' sense of fulfillment (only on mentally healthy people for obvious ethical reasons). You randomly assign subjects to treatment (therapy sessions) and control (no therapy), however you fail to standardize the actual therapy experience. Instead, subjects assigned to different therapists effectively receive different therapy treatments. As a result, those who were lucky enough to be assigned to more skilled or experienced therapists had "better" outcomes (higher sense of fulfillment) than those assigned to inexperienced or unenthusiastic therapists. This is a violation of single treatment value as differences in how exactly the treatment was received affected the individual treatment outcomes.
+SUTVA stands for Stable Unit Treatment Value Assumption. It is one of the requirements for causal inference. SUTVA calls for no spillover (or interference) and single value of treatment. No spillover means one unit's treatment status will not affect the potential outcomes of other units. An example of a spillover violation is this: let's say you had a study on the effect of the presence of a scarecrow on pest-related crop damage. You put a scarecrow in one field as the treatment, and leave a nearby nearly identical field untouched as the control. However, the scarecrow manages to scare away some pestilent animals from the treatment to the scarecrow-free control field increasing the pest damage in the control field. This is an example of spillover since the treatment of a treatment case affected the outcome of a case in the control group. Single value of treatment refers to a single version of treatment for all treatments of the same level; in other words the process by which the treatment is given does not affect the treatment potential outcome. Here's an example of a single treatment value violation: imagine you conducted a study on the effect of psychological therapy on subjects' sense of fulfillment (only on mentally healthy people for obvious ethical reasons). You randomly assign subjects to treatment (therapy sessions) and control (no therapy), however you fail to standardize the actual therapy experience. Instead, subjects assigned to different therapists effectively receive different therapy treatments. As a result, those who were lucky enough to be assigned to more skilled or experienced therapists had "better" outcomes (higher sense of fulfillment) than those assigned to inexperienced or unenthusiastic therapists, who might end up worse off. This is a violation of single treatment value as differences in how exactly the treatment was received affected the individual treatment outcomes.
 
 \newpage
 
@@ -58,19 +58,19 @@ Some economists have argued that ``cost-sharing" makes it more likely that a pro
 
 1. What is $\mathbb{E}[Y_i | D_i = 0]$? (5 points)
 
-
+The expected outcome for subjects who don't receive the treatment, or how likely it is that a subject will use the bed net given that the subject received a partial subsidy. 
 
 2. What is $\mathbb{E}[Y_i(1)]$? (5 points)
 
-
+The expected potential outcome if everyone received the treatment, or how likely it is that a subject will use the bed net if it was given out for free to everyone.
 
 3. What is $\mathbb{E}[Y_i(1) | D_i = 0]$? (5 points)
 
-
+The expected outcome for subjects who are in clinics which only give out the partial subsidy, or the process to assign the treatment to the subject doesn't occur, if they received the treatment (the full subsidy).
 
 4. Cohen and Dupas randomized treatment at the level of the clinic, but the outcomes of interest are at the individual level. Is there a violation of consistency/SUTVA? Why or why not? Argue your case. (5 points)
 
-
+It can't be concluded with certainty whether or not a consistency/SUTVA violation exists based on the given information, but most likely not. There would be a violation if there were some spillover effect or different values of treatment. A single version of treatment violation is very unlikely, as it seems unreasonable that these clinics could somehow carry out different versions of treatment since the treatment is a simple cost subsidy. A spillover effect would be if a clinic giving out the treatment to one patient would affect other patients' (from the same clinic or from different clinics) treatment outcome. This is unlikely, but could still occur in theory. For example, if one woman receiving a free net would cause her to discuss with and convince other participating women about the benefits of using a net, this could affect the probability of using the nets for the other women in the study. Randomizing on the clinic level as opposed to the individual level isn't inherently a violation either, as this is essentially a randomized clustered experiment.
 
 
 \newpage
@@ -145,6 +145,8 @@ STAR <- STAR %>%
                                  race == 4 ~ 'hispanic',
                                  .default = 'others')))
 
+head(STAR)
+
 ```
 
 2. How does performance on fourth grade reading and math tests for
@@ -158,16 +160,18 @@ STAR <- STAR %>%
  
 ```{r}
 
-STAR %>%
-  group_by(kinder) %>%
-  summarise(`reading test mean` = mean(g4reading, na.rm = T),
-            `math test mean` = mean(g4math, na.rm = T),
-            `reading test sd` = sd(g4reading, na.rm = T),
-            `math test sd` = sd(g4math, na.rm = T))
+meandiffReading <- filter(STAR, kinder == 'small') %>% pull(g4reading) %>% mean(na.rm = T) - filter(STAR, kinder == 'regular') %>% pull(g4reading) %>% mean(na.rm = T)
+meandiffMath <- filter(STAR, kinder == 'small') %>% pull(g4math) %>% mean(na.rm = T) - filter(STAR, kinder == 'regular') %>% pull(g4math) %>% mean(na.rm = T)
+sdReading <- pull(STAR, g4reading) %>% sd(na.rm = T)
+sdMath <- pull(STAR, g4math) %>% sd(na.rm = T)
+
+cat('difference in reading test means:', meandiffReading, '\n')
+cat('standard deviation of reading scores:', sdReading, '\n')
+cat('difference in math test means:', meandiffMath, '\n')
+cat('standard deviation of math scores:', sdMath, '\n')
  
 ```
-
-
+Students assigned to small classes in kindergarten performed on average 4.085 points higher on the reading test and 0.622 points lower on the math test in comparison to students assigned to regular-sized classes. These differences are very small compared to the standard deviations of both test scores, which suggests that being assigned to a small vs regular sized class had no effect on reading and math test performance, or at least there is nowhere near enough evidence to reasonably conclude an effect exists.
 
 
 
@@ -184,14 +188,18 @@ STAR %>%
 
 ```{r}
 
-STAR %>%
-  group_by(kinder) %>%
-  summarise(`reading test 33rd pct` = quantile(g4reading, 0.33, na.rm = T),
-            `reading test 66th pct` = quantile(g4reading, 0.66, na.rm = T),
-            `math test 33rd pct` = quantile(g4math, 0.33, na.rm = T),
-            `math test 66th pct` = quantile(g4reading, 0.66, na.rm = T))
+readingpctSmall <- filter(STAR, kinder == 'small') %>% pull(g4reading) %>% quantile(na.rm = T, probs = c(0.33, 0.66))
+readingpctRegular <- filter(STAR, kinder == 'regular') %>% pull(g4reading) %>% quantile(na.rm = T, probs = c(0.33, 0.66))
+mathpctSmall <- filter(STAR, kinder == 'small') %>% pull(g4math) %>% quantile(na.rm = T, probs = c(0.33, 0.66))
+mathpctRegular <- filter(STAR, kinder == 'regular') %>% pull(g4math) %>% quantile(na.rm = T, probs = c(0.33, 0.66))
+
+cat('reading test score percentile differences:\n') 
+print(readingpctSmall - readingpctRegular)
+cat('math test score percentile differences:\n') 
+print(mathpctSmall - mathpctRegular)
 
 ```
+The differences in scores for both tests at both the 33rd and 66th percentiles was very small which supports the previous conclusion that small class size had no effect on fourth grade test performance.
 
 4. We examine whether the STAR program reduced the achievement gaps
   across different racial groups.  Begin by comparing the average
@@ -203,13 +211,21 @@ STAR %>%
   
 ```{r}
 
-STAR %>%
-  filter(kinder != 'regular with aid') %>%
-  group_by(kinder, race) %>%
-  summarise(`reading test mean` = mean(g4reading, na.rm = T),
-            `math test mean` = mean(g4math, na.rm = T))
+white <- STAR %>% filter(race == 'white')
+minority <- STAR %>% filter(race %in% c('black', 'hispanic'))
+
+readingdiffSmall <- filter(white, kinder == 'small') %>% pull(g4reading) %>% mean(na.rm = T) - filter(minority, kinder == 'small') %>% pull(g4reading) %>% mean(na.rm = T)
+readingdiffRegular <- filter(white, kinder == 'regular') %>% pull(g4reading) %>% mean(na.rm = T) - filter(minority, kinder == 'regular') %>% pull(g4reading) %>% mean(na.rm = T)
+mathdiffSmall <- filter(white, kinder == 'small') %>% pull(g4math) %>% mean(na.rm = T) - filter(minority, kinder == 'small') %>% pull(g4math) %>% mean(na.rm = T)
+mathdiffRegular <- filter(white, kinder == 'regular') %>% pull(g4math) %>% mean(na.rm = T) - filter(minority, kinder == 'regular') %>% pull(g4math) %>% mean(na.rm = T)
+
+cat('difference in reading test means for small size:', readingdiffSmall, '\n')
+cat('difference in reading test means for regular size:', readingdiffRegular, '\n')
+cat('difference in math test means for small size:', mathdiffSmall, '\n')
+cat('difference in math test means for regular size:', mathdiffRegular, '\n')
 
 ```
+On average, white students scored higher than minority students on both reading and math tests for every class size. However, for the reading test, the gap between average white student score and average minority student score was smaller for small class sizes than for regular class sizes. The opposite is seen for math; the difference in means was larger at the small class size than at the regular class size. Looking only at the means, it is unclear if these differences are statistically significant.
 
 5. We consider the long term effects of kindergarten class size.
   Compare high school graduation rates across students assigned to
@@ -233,8 +249,20 @@ STAR %>%
   summarise(`graduation rate` = mean(hsgrad, na.rm = T))
 
 ```
+```{r}
+
+cat('high school graduation rate differences:\n', mean(white$hsgrad, na.rm = T) - mean(minority$hsgrad, na.rm = T), '\n')
+cat('\nhigh school graduation rate differences based on class size:\n') 
+print(tapply(white$hsgrad, white$kinder, mean, na.rm = T) - tapply(minority$hsgrad, minority$kinder, mean, na.rm = T))
+cat('\nhigh school graduation rate differences based on years in small classes:\n') 
+print(tapply(white$hsgrad, white$yearssmall, mean, na.rm = T) - tapply(minority$hsgrad, minority$yearssmall, mean, na.rm = T))
+
+```
+Aid and small class sizes did have higher graduation rates than regular class sizes but the difference is very small. Spending 4 years in small classes had a noticeably higher graduation rate than the other years, but extra years did not necessarily equate to higher graduation rates as the graduation rate for 0 years in small classes was larger than for 1 year and similarly the graduation rate for 3 years was less than 2. There seems to generally be a positive correlation between years spent in small classes and graduation rates but the dips during the odd year counts are strange. The difference in graduation rate between white and minority students is similarly high regardless of class size or years spent in small classes, which suggests that the STAR program had little to no effect on the racial gap for high school graduation rates.
 
 \newpage
 ## Question 4. Design Your Experiment (30 points)
 
 Design your own experiment from start to finish. Choose an *interesting* question. Explain why observational data may give you the wrong answer. Detail the potential outcomes and a well-defined treatment. Explain the type of experiment (completely random, cluster-design, block/stratified). Will your design ensure a causal treatment effect? (Remember: Be as specific as possible and give examples.)
+
+Question: Do product availability urgency indicators ("there are n items left") increase e-commerce sales during holiday (peak shopping) season? To answer this question we will use a block/stratified design. Since consumers' urgency to buy a product probably varies between different types of products, we will stratify by product type, e.g. electronics, clothing, and beauty products. Within these blocks we will randomly assign divide shoppers (half and half) into treatment and control groups. The treatment will be a "n items left in stock" label at the top of the product page. The potential outcome $Y_i(1)$ will be how much the customer spends on that product with the label present while the potential outcome $Y_i(0)$ will be how much the customer spends with no label present. This design will ensure a causal treatment effect by satisfying the three requirements of ignorability, SUTVA, and positivity. By randomizing assignment into the treatment and control groups, we will control for any confounders and selection effects to ensure ignorability. Since it's e-commerce, there is a risk of spillover since customers may share product pages with their friends. To mitigate this we can limit the experiment to customers who are browsing from the website's home page as most people share using URLs. To eliminate the risk of single treatment violation, we can make sure the limited availability indicators are identical in design and positioning. By randomizing the treatment assignment we ensure that all subjects of the experiment have a chance of being assigned the treatment so the positivity assumption is met. Observational data can be quite misleading due to the inability to control for confounding factors. If data on limited availability labels exists, it probably is not randomized so as to control for factors such as concurrent promotions and market campaigns, or individual product popularity. Both of these have an effect on sales, so randomization is important to control for them.
