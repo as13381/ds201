@@ -1,0 +1,200 @@
+---
+title: "Problem Set 2"
+author: "Your Name - Net ID - Section Number "
+date: "Due Nov 10, 2023"
+output:
+  pdf_document: default
+header-includes: 
+  - \usepackage{tikz}
+---
+
+This homework must be turned in on Brightspace by Nov. 10, 2023. It must be your own work, and your own work only -- you must not copy anyone's work, or allow anyone to copy yours. This extends to writing code. You may consult with others, but when you write up, you must do so alone.
+
+Your homework submission must be written and submitted using Rmarkdown. No handwritten solutions will be accepted. \textbf{No zip files will be accepted.} \textbf{Make sure we can read each line of code in the pdf document.} You should submit the following:
+
+1. A compiled PDF file named yourNetID\_solutions.pdf containing your solutions to the problems.
+
+2. A .Rmd file containing the code and text used to produce your compiled pdf named yourNetID\_solutions.Rmd.
+
+
+Note that math can be typeset in Rmarkdown in the same way as Latex. Please make sure your answers are clearly structured in the Rmarkdown file:
+
+1. Label each question part
+
+2. Do not include written answers as code comments.
+
+3. The code used to obtain the answer for each question part should accompany the written answer. Comment your code!
+
+
+\newpage 
+
+
+## Question 1 (Total: 50)
+In new democracies and post-conflict settings, Truth and Reconciliation Commissions (TRCs) are often
+tasked with investigating and reporting about wrongdoing in previous governments. Depending on the context, institutions such as TRCs are expected to reduce hostilities (e.g. racial hostilities) and promote peace.
+
+In 1995, South Africa’s new government formed a national TRC in the aftermath of apartheid. [Gibson 2004] uses survey data collected from 2000-2001 to examine whether this TRC promoted inter-racial reconciliation. The outcome of interest is respondent racial attitudes (as measured by the level of agreement with the prompt: "I find it difficult to understand the customs and ways of [the opposite racial group]".) The treatment is ``exposure to the TRC" as measured by the individual’s level of self-reported knowledge about the TRC.
+
+You will need to use the trc_data.dta file for this question. The relevant variables are:
+
+- RUSTAND - Outcome: respondent’s racial attitudes (higher values indicate greater agreement)
+- TRCKNOW - Treatment dummy (1 = if knows about the TRC, 0 = otherwise)
+- age - Respondent age (in 2001)
+- female - Respondent gender
+- wealth - Measure of wealth constructed based on asset ownership (assets are fridge, floor polisher,
+    vacuum cleaner, microwave oven, hi-fi, washing machine, telephone, TV, car)
+- religiosity - Self-reported religiosity (7 point scale)
+- ethsalience - Self-reported ethnic identification (4 point scale)
+- rcblack - Respondent is black
+- rcwhite - Respondent is white
+- rccol - Respondent is coloured (distinct multiracial ethnic group)
+- EDUC - Level of education (9 point scale)
+
+### Part a (15 points)
+
+Estimate the average treatment effect of TRC exposure on respondents’ racial attitudes under the assumption that TRC exposure is ignorable. Report a 95% confidence interval for your estimate and interpret your results. (Use robust standard errors throughout.)
+
+
+```{r, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(haven)
+library(estimatr) # for lm with robust se : ?lm_robust()
+
+# Load in the TRC data (it's a STATA .dta so we use the haven package)
+TRC_data <- haven::read_dta("trc_data.dta")
+
+
+```
+
+
+### Part b (15 points)
+
+Examine whether exposed and nonexposed respondents differ on the full set of observed covariates using a series of balance tests. Briefly discuss, in which ways do exposed and nonexposed respondents differ?
+
+
+```{r}
+
+
+```
+
+
+### Part c (10 points)
+
+Now assume that TRC exposure is conditionally ignorable given the set of observed covariates:
+
+1. Use a logistic regression model to estimate the propensity score for each observation. (For purposes of this question, do not include any interactions.)
+2. With this model, construct inverse propensity of treatment weights (IPTW) for each observation using the unstabilized weights.
+3. Use the propensity score to construct an IPW estimator and report the point estimate for the ATE.
+
+Use the following covariates: age, female, wealth, religiosity, ethsalience, rcblack, rcwhite, rccol, EDUC
+
+
+```{r}
+
+
+```
+
+### Part d (10 points)
+
+Using the bootstrap method (resampling individual rows of the data with replacement), obtain an estimate for the standard error of your IPTW estimator for the ATE. Compute a 95% confidence interval and interpret your findings. (You should report estimate, standard error, 95% CI lower, 95% CI upper, for interpretation, compare your results in Part C/D to your estimate from Part A and briefly discuss your findings.)
+
+
+```{r}
+# Set random seed
+set.seed(123)
+
+```
+
+
+## Question 2 (Total: 50 points)
+
+Use the same data set as in Question 1.
+
+### Part a (15 points)
+
+Estimate the ATT of TRC exposure on respondents’ racial attitudes using the MatchIt approach. You can use the matchit function from MatchIt package in R. Implement the nearest neighbor matching algorithm and estimate the ATT. Report the 95% confidence interval of your estimate.
+
+```{r}
+library(MatchIt)
+# Read the help file first! Check out the default settings
+# ?matchit()
+
+```
+
+
+### Part b (15 points)
+
+Estimate the ATT of TRC exposure on respondents’ racial attitudes using the MatchIt approach. You can use the matchit function from MatchIt package in R. Implement the exact matching algorithm and estimate the ATT. Report the 95% confidence interval of your estimate.
+
+```{r}
+
+```
+
+
+### Part c (10 points)
+
+Estimate the ATT of TRC exposure on respondents’ racial attitudes using the MatchIt approach. You can use the matchit function from MatchIt package in R. Implement the \textbf{coarsened exact matching} algorithm and estimate the ATT. Report the 95% confidence interval of your estimate.
+
+```{r}
+
+
+```
+
+
+### part d (10 points)
+
+Compare and contrast the three different matching algorithms. Provide evidence and an argument about which one we should use.
+
+
+## BONUS ONLY: Question 3 (Total: Up to +12)
+Question 3 is for bonus points. (See forthcoming lecture on Nov. 7th)
+
+### part a (+4 points)
+Using the regression method to predict potential outcomes for all individuals in the dataset and calculate the ATE with bootstrapped standard errors. Report and interpret your results. (Hint: Start by fitting the treatment and control model with subsets of the data.)
+```{r}
+
+## Fit a model among TRCKNOW == 1 to get E[Y_i(1) | X]
+
+
+## Fit a model among TRCKNOW == 0 to get E[Y_i(0) | X]
+
+
+## Predict the potential outcome under treatment for all units
+
+## Predict the potential outcome under control for all units
+
+## Average of the differences
+
+### Bootstrap for SEs
+set.seed(123)
+
+```
+
+
+
+### part b (+4 points)
+Using the regression method to predict potential outcomes for all individuals and calculate the ATT with bootstrapped standard errors. Report and interpret your results. 
+
+```{r}
+
+
+## Fit a model among TRCKNOW == 1 to get E[Y_i(1) | X]
+
+## Fit a model among TRCKNOW == 0 to get E[Y_i(0) | X]
+
+## Predict the potential outcome under treatment for all units
+
+## Predict the potential outcome under control for all units
+
+## Average of the differences
+
+### Bootstrap for SEs
+set.seed(123)
+
+```
+
+
+### part c (+4 points) 
+
+Compare and contrast the ATE and ATT from the regression approach. 
+
