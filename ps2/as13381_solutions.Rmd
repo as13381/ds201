@@ -6,6 +6,8 @@ output:
   pdf_document: default
 header-includes: 
   - \usepackage{tikz}
+  - \usepackage{fvextra}
+  - \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
 ---
 
 This homework must be turned in on Brightspace by Nov. 10, 2023. It must be your own work, and your own work only -- you must not copy anyone's work, or allow anyone to copy yours. This extends to writing code. You may consult with others, but when you write up, you must do so alone.
@@ -98,50 +100,13 @@ means <- TRC_data %>%
             rccol = mean(rccol_std),
             EDUC = mean(EDUC_std))
 
-sds <- TRC_data %>% 
-  group_by(TRCKNOW) %>% 
-  summarize(age = sd(age_std),
-            female = sd(female_std),
-            wealth = sd(wealth_std),
-            religiosity = sd(religiosity_std),
-            ethsalience = sd(ethsalience_std),
-            rcblack = sd(rcblack_std),
-            rcwhite = sd(rcwhite_std),
-            rccol = sd(rccol_std),
-            EDUC = sd(EDUC_std))
-
-pval = function(x) {
-  return(lm_robust(x ~ TRCKNOW, data = TRC_data)$p.value[2])
-}
-
-pvals <- TRC_data %>%
-  summarize(age = pval(age),
-            female = pval(female),
-            wealth = pval(wealth),
-            religiosity = pval(religiosity),
-            ethsalience = pval(ethsalience),
-            rcblack = pval(rcblack),
-            rcwhite = pval(rcwhite),
-            rccol = pval(rccol),
-            EDUC = pval(EDUC))
-
 # means
 meansoutput <- as.data.frame(means[-c(1)])
 rownames(meansoutput) <- c('Control Means', 'Treatment Means')
 
-# sds
-sdsoutput <- as.data.frame(sds[-c(1)])
-rownames(sdsoutput) <- c('Control SDs', 'Treatment SDs')
-
-# pvals
-rownames(pvals) <- c('p value')
-
-balancetest <- rbind(meansoutput, sdsoutput, pvals) %>%
-  mutate(across(everything(), round, 6))
-
-balancetest
+meansoutput
 ```
-
+On average, exposed subjects tend to be slighty younger, wealthier, less religious, slightly stronger ethnic identification, and better educated. Exposed subjects were also more likely to be female, black or white but not "colored".
 
 ### Part c (10 points)
 
@@ -157,8 +122,14 @@ Use the following covariates: age, female, wealth, religiosity, ethsalience, rcb
 ```{r}
 logreg <- glm(TRCKNOW ~ age + female + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, family = binomial(link = 'logit'), data = TRC_data)
 
-TRC_data$scores <- predict(logreg,)
+TRC_data$scores <- predict(logreg, type = 'response')
 
+TRC_data$wt <- TRC_data$TRCKNOW * (1 / TRC_data$scores) + (1 - TRC_data$TRCKNOW) * (1 / (1 - TRC_data$scores))
+
+
+point_est <- mean(TRC_data$wt * TRC_data$RUSTAND * TRC_data$TRCKNOW - TRC_data$wt * TRC_data$RUSTAND * (1 - TRC_data$TRCKNOW))
+
+point_est
 ```
 
 ### Part d (10 points)
@@ -170,8 +141,26 @@ Using the bootstrap method (resampling individual rows of the data with replacem
 # Set random seed
 set.seed(123)
 
+n_iter <- 1000
+IPTW_boot <- rep(NA, n_iter)
+
+for (i in 1:n_iter) {
+  TRC_boot <- TRC_data[sample(nrow(TRC_data), replace = T),]
+  TRC_boot$boot_score <- glm(logreg, family = binomial(), data = TRC_boot)$fitted.values
+  TRC_boot$wt <- TRC_boot$TRCKNOW * (1 / TRC_boot$boot_score) + (1 - TRC_boot$TRCKNOW) * (1 / (1 - TRC_boot$boot_score))
+  IPTW_boot[i] <- summary(lm_robust(RUSTAND ~ TRCKNOW, weights = TRC_boot$wt, data = TRC_boot))$coefficients[2, 1]
+}
 ```
 
+```{r}
+SE <-sd(IPTW_boot)
+
+tibble('Estimate' = point_est, 
+       'Standard Error' = SE, 
+       '95% CI Lower' = point_est - qnorm(0.975) * SE, 
+       '95% CI Upper' = point_est + qnorm(0.975) * SE)
+```
+The 95% confidence interval is [-0.2569, -0.0819] with the point estimate of -0.1694 and standard error of 0.0446. Since 0 is not included inside the confidence interval we still reject the null hypothesis of no treatment effect. This estimate is somewhat closer to zero than the first estimate which would imply that the effect was overestimated in part A due to confounding effects of some or all covariates.
 
 ## Question 2 (Total: 50 points)
 
@@ -185,7 +174,11 @@ Estimate the ATT of TRC exposure on respondents’ racial attitudes using the Ma
 library(MatchIt)
 # Read the help file first! Check out the default settings
 # ?matchit()
+m.out1 <- matchit(TRCKNOW ~ age + female + wealth + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, data = TRC_data, method = 'nearest', link = 'logit')
 
+m.data1 <- match.data(m.out1)
+
+tidy(lm_robust(RUSTAND ~ TRCKNOW + age + female + wealth + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, data = m.data1))
 ```
 
 
@@ -194,7 +187,11 @@ library(MatchIt)
 Estimate the ATT of TRC exposure on respondents’ racial attitudes using the MatchIt approach. You can use the matchit function from MatchIt package in R. Implement the exact matching algorithm and estimate the ATT. Report the 95% confidence interval of your estimate.
 
 ```{r}
+m.out2 <- matchit(TRCKNOW ~ age + female + wealth + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, data = TRC_data, method = 'exact', link = 'logit')
 
+m.data2 <- match.data(m.out2)
+
+tidy(lm_robust(RUSTAND ~ TRCKNOW + age + female + wealth + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, data = m.data2))
 ```
 
 
@@ -203,8 +200,11 @@ Estimate the ATT of TRC exposure on respondents’ racial attitudes using the Ma
 Estimate the ATT of TRC exposure on respondents’ racial attitudes using the MatchIt approach. You can use the matchit function from MatchIt package in R. Implement the \textbf{coarsened exact matching} algorithm and estimate the ATT. Report the 95% confidence interval of your estimate.
 
 ```{r}
+m.out3 <- matchit(TRCKNOW ~ age + female + wealth + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, data = TRC_data, method = 'cem', link = 'logit')
 
+m.data3 <- match.data(m.out3)
 
+tidy(lm_robust(RUSTAND ~ TRCKNOW + age + female + wealth + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, data = m.data3))
 ```
 
 
@@ -212,6 +212,7 @@ Estimate the ATT of TRC exposure on respondents’ racial attitudes using the Ma
 
 Compare and contrast the three different matching algorithms. Provide evidence and an argument about which one we should use.
 
+The estimate using nearest neighbors was -0.1802 with a standard error of 0.0454 and 95% confidence interval of [-0.2638, -0.0911]. The estimate using exact matching was 0.1027 with a standard error of 0.1787 and 95% confidence interval of [-0.2501, 0.4555]. The estimate using coarsened exact matching was -0.1262 with a standard error of 0.0618 and 95% confidence interval of [-0.2473, -0.0050]. The exact matching estimate was not statistically significant, while the nearest neighbors and CEM estimates were. The nearest neighbors also had the smallest standard error. As a result, I would choose the nearest neighbors algorithm as it had a statistically significant effect (which agrees with all the other estimates besides the exact matching) while also having the smallest standard error, or the most precise estimate. This is likely because the nearest neighbor algorithm is able to match a lot more treatments so less data is dropped and thus the sample size is larger.
 
 ## BONUS ONLY: Question 3 (Total: Up to +12)
 Question 3 is for bonus points. (See forthcoming lecture on Nov. 7th)
@@ -221,23 +222,44 @@ Using the regression method to predict potential outcomes for all individuals in
 ```{r}
 
 ## Fit a model among TRCKNOW == 1 to get E[Y_i(1) | X]
-
+treatment_model <- lm_robust(RUSTAND ~ TRCKNOW + age + female + wealth + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, data = TRC_data, subset = TRCKNOW == 1)
 
 ## Fit a model among TRCKNOW == 0 to get E[Y_i(0) | X]
+control_model <- lm_robust(RUSTAND ~ TRCKNOW + age + female + wealth + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, data = TRC_data, subset = TRCKNOW == 0)
 
 
 ## Predict the potential outcome under treatment for all units
-
+TRC_data$treat_outcome <- predict(treatment_model, newdata = TRC_data)
 ## Predict the potential outcome under control for all units
-
+TRC_data$cont_outcome <- predict(control_model, newdata = TRC_data)
 ## Average of the differences
+avg_diff <- mean(TRC_data$treat_outcome - TRC_data$cont_outcome)
+paste('Estimate:', avg_diff)
+```
 
+```{r}
 ### Bootstrap for SEs
 set.seed(123)
 
+n_iter <- 1000
+SE_boot <- rep(NA, n_iter)
+
+for (i in 1:n_iter) {
+  boot_data <- TRC_data[sample(1:nrow(TRC_data), nrow(TRC_data), replace = T),]
+  treat_boot_model <- lm_robust(RUSTAND ~ age + female + wealth + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, data = boot_data, subset = TRCKNOW == 1)
+  cont_boot_model <- lm_robust(RUSTAND ~ age + female + wealth + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, data = boot_data, subset = TRCKNOW == 0)
+  boot_data$treat_boot <- predict(treat_boot_model, newdata = boot_data)
+  boot_data$cont_boot <- predict(cont_boot_model, newdata = boot_data)
+  SE_boot[i] <- mean(boot_data$treat_boot - boot_data$cont_boot)
+}
+
+SE <- sd(SE_boot)
+paste('Standard Error:', SE)
 ```
-
-
+```{r}
+paste('confidence interval: [', avg_diff - qnorm(0.975) * SE, ',', avg_diff + qnorm(0.975) * SE, ']')
+```
+The point estimate for the average treatment effect is -0.1744 with a standard error of 0.0438 and a confidence interval of [-0.2602, -0.0886]. Since 0 is outside of this confidence interval we still reject the null hypothesis of no effect.
 
 ### part b (+4 points)
 Using the regression method to predict potential outcomes for all individuals and calculate the ATT with bootstrapped standard errors. Report and interpret your results. 
@@ -246,22 +268,46 @@ Using the regression method to predict potential outcomes for all individuals an
 
 
 ## Fit a model among TRCKNOW == 1 to get E[Y_i(1) | X]
+treatment_model <- lm_robust(RUSTAND ~ age + female + wealth + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, data = TRC_data, subset = TRCKNOW == 1)
 
 ## Fit a model among TRCKNOW == 0 to get E[Y_i(0) | X]
-
+control_model <- lm_robust(RUSTAND ~ age + female + wealth + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, data = TRC_data, subset = TRCKNOW == 0)
 ## Predict the potential outcome under treatment for all units
-
+TRC_data$treated <- predict(treatment_model, newdata = TRC_data)
 ## Predict the potential outcome under control for all units
-
+TRC_data$control <- predict(control_model, newdata = TRC_data)
 ## Average of the differences
+avg_diff <- mean(TRC_data[TRC_data$TRCKNOW == 1,]$treated - TRC_data[TRC_data$TRCKNOW == 1,]$control)
+paste('Estimate:', avg_diff)
+```
+
+```{r}
 
 ### Bootstrap for SEs
 set.seed(123)
+n_iter <- 1000
+SE_boot <- rep(NA, n_iter)
 
+for (i in 1:n_iter) {
+  boot_data <- TRC_data[sample(1:nrow(TRC_data), nrow(TRC_data), replace = T),]
+  treat_boot_model <- lm_robust(RUSTAND ~ age + female + wealth + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, data = boot_data, subset = TRCKNOW == 1)
+  cont_boot_model <- lm_robust(RUSTAND ~ age + female + wealth + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, data = boot_data, subset = TRCKNOW == 0)
+  boot_data$treat_boot <- predict(treat_boot_model, newdata = boot_data)
+  boot_data$cont_boot <- predict(cont_boot_model, newdata = boot_data)
+  SE_boot[i] <- mean(boot_data[boot_data$TRCKNOW == 1,]$treat_boot - boot_data[boot_data$TRCKNOW == 1,]$cont_boot)
+}
+
+SE <- sd(SE_boot)
+paste('Standard Error:', SE)
 ```
 
+```{r}
+paste('confidence interval: [', avg_diff - qnorm(0.975) * SE, ',', avg_diff + qnorm(0.975) * SE, ']')
+```
+The point estimate for ATT is -0.2034 with a standard error of 0.0452 and confidence interval of [-0.2920, -0.1148]. Since 0 is outside of this confidence interval we still reject the null hypothesis of no effect/
 
 ### part c (+4 points) 
 
 Compare and contrast the ATE and ATT from the regression approach. 
 
+The magnitude of the ATE estimate is lower with a slightly lower bootstrapped standard error. The ATT likely has a higher standard error because it involves a lower sample size (only treated subjects) and possibly a higher magnitude estimate because of some inherent difference (bias perhaps) between the treated and control groups.
