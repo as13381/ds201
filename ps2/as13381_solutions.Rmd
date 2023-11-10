@@ -63,9 +63,11 @@ library(estimatr) # for lm with robust se : ?lm_robust()
 # Load in the TRC data (it's a STATA .dta so we use the haven package)
 TRC_data <- haven::read_dta("trc_data.dta")
 
+linreg <- lm_robust(RUSTAND ~ TRCKNOW, data = TRC_data)
 
+tidy(linreg)
 ```
-
+The estimate for the average effect of knowing about TRC is -0.2177 on respondents' racial attitudes. The 95% confidence interval is equal to [-0.3047, -0.1308]. 0 is noticeably not within this interval, therefore we reject the null hypothesis of no effect since the effect is statistically significant at 95% confidence level.
 
 ### Part b (15 points)
 
@@ -73,8 +75,71 @@ Examine whether exposed and nonexposed respondents differ on the full set of obs
 
 
 ```{r}
+TRC_data <- TRC_data %>%
+  mutate(age_std = age / sd(age),
+         female_std = female / sd(female),
+         wealth_std = wealth / sd(wealth),
+         religiosity_std = religiosity / sd(religiosity),
+         ethsalience_std = ethsalience / sd(ethsalience),
+         rcblack_std = rcblack / sd(rcblack),
+         rcwhite_std = rcwhite / sd(rcwhite),
+         rccol_std = rccol / sd(rccol),
+         EDUC_std = EDUC / sd(EDUC))
 
+means <- TRC_data %>% 
+  group_by(TRCKNOW) %>% 
+  summarize(age = mean(age_std),
+            female = mean(female_std),
+            wealth = mean(wealth_std),
+            religiosity = mean(religiosity_std),
+            ethsalience = mean(ethsalience_std),
+            rcblack = mean(rcblack_std),
+            rcwhite = mean(rcwhite_std),
+            rccol = mean(rccol_std),
+            EDUC = mean(EDUC_std))
 
+sds <- TRC_data %>% 
+  group_by(TRCKNOW) %>% 
+  summarize(age = sd(age_std),
+            female = sd(female_std),
+            wealth = sd(wealth_std),
+            religiosity = sd(religiosity_std),
+            ethsalience = sd(ethsalience_std),
+            rcblack = sd(rcblack_std),
+            rcwhite = sd(rcwhite_std),
+            rccol = sd(rccol_std),
+            EDUC = sd(EDUC_std))
+
+pval = function(x) {
+  return(lm_robust(x ~ TRCKNOW, data = TRC_data)$p.value[2])
+}
+
+pvals <- TRC_data %>%
+  summarize(age = pval(age),
+            female = pval(female),
+            wealth = pval(wealth),
+            religiosity = pval(religiosity),
+            ethsalience = pval(ethsalience),
+            rcblack = pval(rcblack),
+            rcwhite = pval(rcwhite),
+            rccol = pval(rccol),
+            EDUC = pval(EDUC))
+
+# means
+meansoutput <- as.data.frame(means[-c(1)])
+rownames(meansoutput) <- c('Control Means', 'Treatment Means')
+
+# sds
+sdsoutput <- as.data.frame(sds[-c(1)])
+rownames(sdsoutput) <- c('Control SDs', 'Treatment SDs')
+
+# pvals
+rownames(pvals) <- c('p value')
+
+balancetest <- rbind(meansoutput, sdsoutput, pvals) %>%
+  mutate(across(everything(), round, 6))
+
+balancetest
 ```
 
 
@@ -90,7 +155,9 @@ Use the following covariates: age, female, wealth, religiosity, ethsalience, rcb
 
 
 ```{r}
+logreg <- glm(TRCKNOW ~ age + female + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, family = binomial(link = 'logit'), data = TRC_data)
 
+TRC_data$scores <- predict(logreg,)
 
 ```
 
