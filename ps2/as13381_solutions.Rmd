@@ -120,7 +120,7 @@ Use the following covariates: age, female, wealth, religiosity, ethsalience, rcb
 
 
 ```{r}
-logreg <- glm(TRCKNOW ~ age + female + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, family = binomial(link = 'logit'), data = TRC_data)
+logreg <- glm(TRCKNOW ~ age + female + wealth + religiosity + ethsalience + rcblack + rcwhite + rccol + EDUC, family = binomial(link = 'logit'), data = TRC_data)
 
 TRC_data$scores <- predict(logreg, type = 'response')
 
