@@ -6,6 +6,8 @@ output:
   pdf_document: default
 header-includes: 
   - \usepackage{tikz}
+  - \usepackage{fvextra}
+  - \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
 ---
 
 This homework must be turned in on Brightspace by Dec. 1, 2023. It must be your own work, and your own work only -- you must not copy anyone's work, or allow anyone to copy yours. This extends to writing code. You may consult with others, but when you write up, you must do so alone.
@@ -53,19 +55,28 @@ library(estimatr) # for lm with robust se : ?lm_robust()
 bases <- haven::read_dta("bases_replication_final.dta")
 
 # How many observations are in the ``no bases group"
-
+n_control = sum(bases$bases6 == 0)
+print(n_control)
 ```
 
 ```{r}
-## How about each of them?
-
+# Print number of municipalities whose bases6 value changes between years
+bases %>% 
+  group_by(municipality) %>%
+  summarise(bases6_change = n_distinct(bases6) > 1) %>%
+  filter(bases6_change) %>%
+  nrow()
 ```
 
 ```{r}
-
-## How many municipalities do we have
-
+# Print number of years whose lrmilnar_col value changes between municipalities
+bases %>% 
+  group_by(year) %>%
+  summarise(lrmilnar_col_change = n_distinct(lrmilnar_col) > 1) %>%
+  filter(lrmilnar_col_change) %>%
+  nrow()
 ```
+There are 16,272 units in the control group of no bases. Since there are no municipalities whose bases6 column has more than 1 unique value between different years, we can conclude that the bases variable doesn't change over time. Because there are no years whose lrmilnar_col column has more than 1 unique value between different municipalities, we can also conclude that the logged military aid variable doesn't change across units for a given year. This implies that the authors assume military aid is allocated evenly between municipalities with no spillover effects.
 
 
 ### Part b (20 points)
@@ -74,7 +85,7 @@ The authors use a common empirical strategy called two-way fixed effects to esti
 $$ Y_{it} = \gamma_t + \alpha_i + \tau D_{it} + \beta X_{it} + \epsilon_{it}$$ 
 What assumptions are the authors making in order to identify the treatment effect of military aid?
 
-
+The authors are assuming the relationship between the outcome and independent variables is linear. They also assume that the unobserved confounders are constant within groups. Additionally, the authors assumed the parallel trends assumption to be met, that the selection bias is the same at different times which causes the trend in potential outcomes between times in the treated group is the same as in the control group. In other words, in the absence of treatment, the difference between treatment and control group outcomes is constant between times.
 
 ### Part c (20 points)
 
@@ -83,10 +94,13 @@ Using the two-way fixed effects estimator, estimate the effect of U.S. military 
 ```{r}
 #?lm_robust (set se_type to "CR0")
 # Fit Regression using lm_robust 
-
+lin_reg = lm_robust(paratt ~ bases6 + lrmilnar_col + bases6xlrmilnar_col + lnnewpop,
+                    data = bases,
+                    clusters = municipality,
+                    fixed_effects = municipality + year,
+                    se_type = 'CR0')
 # Summarize
-
+tidy(lin_reg)
 
 ```
-
-
+The 95% confidence interval for the treatment is [3.239171e-02,	2.682314e-01]. This interval notably doesn't include 0 so we conclude that the effect is significant and reject the null hypothesis that there is no treatment effect; US military and narcotics aid to Columbia increases the intesity of paramilitary attacks. 
