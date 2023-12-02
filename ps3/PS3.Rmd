@@ -1,6 +1,6 @@
 ---
 title: "Problem Set 3"
-author: "Your Name - Net ID - Section Number "
+author: "Andrew Shao - as13381 - 005 "
 date: "Due Dec 1, 2023"
 output:
   pdf_document: default
