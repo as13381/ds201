@@ -72,25 +72,29 @@ Estimate the intent-to-treat effects of being selected to sign up for Medicaid o
 
 ```{r}
 # Estimate the ITT on elevated blood pressure
-lm_robust(tab2bp_hyper ~ treatment, data = data)
+itt_bp <- lm_robust(tab2bp_hyper ~ treatment, data = data)
+tidy(itt_bp)
 ```
 The estimated effect is -0.0016 with a confidence interval of [-0.0146, 0.0114]. This interval includes 0, so we do not reject the null hypothesis of no effect since this result is not statistically significant. We conclude that being selected to sign up for Medicaid has no effect on elevated blood pressure.
 
 ```{r, warnings = F}
 # Estimate the ITT on depression
-lm_robust(tab2phqtot_high ~ treatment, data = data)
+itt_dep <- lm_robust(tab2phqtot_high ~ treatment, data = data)
+tidy(itt_dep)
 ```
 The estimated effect is -0.0349 with a confidence interval of [-0.051, -0.0188]. This interval doesn't include 0, so we reject the null hypothesis of no effect since this result is statistically significant. We conclude that being selected to sign up for Medicaid makes it less likely to be depressed.
 
 ```{r, warnings = F}
 # Estimate the ITT on catastrophic expenditures
-lm_robust(tab4_catastrophic_exp_inp ~ treatment, data = data)
+itt_exp <- lm_robust(tab4_catastrophic_exp_inp ~ treatment, data = data)
+tidy(itt_exp)
 ```
 The estimated effect is -0.0153 with a confidence interval of [-0.0229, -0.00766]. This interval doesn't include 0, so we reject the null hypothesis of no effect since this result is statistically significant. We conclude that being selected to sign up for Medicaid makes it less likely to have catastrophic medical expenditure.
 
 ```{r, warnings = F}
 # Estimate the ITT on "needs met"
-lm_robust(tab5_needmet_med_inp ~ treatment, data = data)
+itt_needs <- lm_robust(tab5_needmet_med_inp ~ treatment, data = data)
+tidy(itt_needs)
 ```
 The estimated effect is 0.0345 with a confidence interval of [0.0173, 0.0516]. This interval doesn't include 0, so we reject the null hypothesis of no effect since this result is statistically significant. We conclude that being selected to sign up for Medicaid makes it more likely for patients feel their medical needs are met.
 
@@ -103,26 +107,30 @@ Suppose that researchers actually wanted to estimate the effect of Medicaid enro
 
 ```{r}
 # Estimate the Naive OLS effect on elevated blood pressure
-lm_robust(tab2bp_hyper ~ ohp_all_ever_admin, data = data)
+ols_bp <- lm_robust(tab2bp_hyper ~ ohp_all_ever_admin, data = data)
+tidy(ols_bp)
 ```
 The estimated effect is -0.0181 with a confidence interval of [-0.0321, -0.00401]. This interval doesn't include 0, so we reject the null hypothesis of no effect since this result is statistically significant. We conclude that being enrolled in Medicaid makes it less likely to have elevated blood pressure.
 
 ```{r, warnings = F}
 # Estimate the Naive OLS effect on depression
-lm_robust(tab2phqtot_high ~ ohp_all_ever_admin, data = data)
+ols_dep <- lm_robust(tab2phqtot_high ~ ohp_all_ever_admin, data = data)
+tidy(ols_dep)
 ```
 The estimated effect is 0.0493 with a confidence interval of [0.0312, 0.0674]. This interval doesn't include 0, so we reject the null hypothesis of no effect since this result is statistically significant. We conclude that being enrolled in Medicaid makes it more likely to be depressed.
 
 
 ```{r, warnings = F}
 # Estimate the Naive OLS effect on catastrophic expenditures
-lm_robust(tab4_catastrophic_exp_inp ~ ohp_all_ever_admin, data = data)
+ols_exp <- lm_robust(tab4_catastrophic_exp_inp ~ ohp_all_ever_admin, data = data)
+tidy(ols_exp)
 ```
 The estimated effect is -0.0107 with a confidence interval of [-0.0187, -0.00278]. This interval doesn't include 0, so we reject the null hypothesis of no effect since this result is statistically significant. We conclude that being enrolled in Medicaid makes it less likely to have catastrophic medical expenditure.
 
 ```{r, warnings = F}
 # Naive OLS estimate on needs met
-lm_robust(tab5_needmet_med_inp ~ ohp_all_ever_admin, data = data)
+ols_needs <- lm_robust(tab5_needmet_med_inp ~ ohp_all_ever_admin, data = data)
+tidy(ols_needs)
 ```
 The estimated effect is 0.0613 with a confidence interval of [0.0427, 0.0799]. This interval doesn't include 0, so we reject the null hypothesis of no effect since this result is statistically significant. We conclude that being enrolled in Medicaid makes it more likely for patients feel their medical needs are met.
 
@@ -148,7 +156,7 @@ null_mod<-lm_robust(ohp_all_ever_admin ~ 1, data=data)
 # F - Stat for Instrument Strength (use waldtest)
 waldtest(linreg, null_mod, test = 'F')
 ```
-
+14.5% of participants who weren't selected still enrolled in the Medicaid program. Being selected in the lottery increased participants' chances of enrollment in Medicaid by 23.6% for a total of 38.1% of participants who were selected. This implies that 23.6% of the subjects were compliers who would enroll if selected and would not otherwise. Since the estimated effect of being selected and the sample size is large, this instrument is strong. The calculated F-statistic was 1610, which is very high, with an extremely small p-value of less than $2 \cdot 10^{-16}$.
 
 ## Question D (25 points)
 
@@ -158,19 +166,29 @@ Now estimate the effect of Medicaid enrollment on each of the four outcomes usin
 
 ```{r}
 # Estimate the IV effect on elevated blood pressure (use iv_robust())
+iv_bp <- iv_robust(tab2bp_hyper ~ ohp_all_ever_admin|treatment, data = data)
+tidy(iv_bp)
 ```
+The IV estimate for the effect of Medicaid enrollment on elevated blood pressure is -0.0063. The 95% confidence interval for this estimate is [-0.0574, 0.0448]. Since 0 falls within this interval, we fail to reject the null hypothesis of no effect since the result is not statistically significant. This result differs from the previous naive OLS result, which suggested that enrollment in Medicaid does negatively affect participants' chances of elevated blood pressure. The IV estimate suggests that enrollment in Medicaid doesn't affect participants' chances of elevated blood pressure and the previously observed effect was due to unobserved confounders.
 
 ```{r, warnings = F}
 # Estimate the IV effect on depression
+iv_dep <- iv_robust(tab2phqtot_high ~ ohp_all_ever_admin|treatment, data = data)
+tidy(iv_dep)
 ```
-
+The IV estimate for the effect of Medicaid enrollment on depression is -0.138. The 95% confidence interval for this estimate is [-0.202, -0.0732]. Since 0 doesn't fall within this interval, we reject the null hypothesis of no effect since the result is statistically significant. This result differs from the previous naive OLS result, which suggested that enrollment in Medicaid increases participants' chances of depression. The IV estimate suggests that enrollment in Medicaid decreases participants' chances of depression.
 
 
 ```{r, warnings = F}
 # Estimate the IV effect on catastrophic expenditures
+iv_exp <- iv_robust(tab4_catastrophic_exp_inp ~ ohp_all_ever_admin|treatment, data = data)
+tidy(iv_exp)
 ```
-
+The IV estimate for the effect of Medicaid enrollment on catastrophic expenditures is -0.0604. The 95% confidence interval for this estimate is [-0.0906, -0.0301]. Since 0 doesn't fall within this interval, we reject the null hypothesis of no effect since the result is statistically significant. This result agrees with the previous naive OLS result, which suggested that enrollment in Medicaid decreases participants' chances of having catastrophic medical expenditure. The IV estimated effect is larger, with a larger standard error as well.
 
 ```{r, warnings = F}
 # IV estimate on needs met
+iv_needs <- iv_robust(tab5_needmet_med_inp ~ ohp_all_ever_admin|treatment, data = data)
+tidy(iv_needs)
 ```
+The IV estimate for the effect of Medicaid enrollment on medical needs met is 0.135. The 95% confidence interval for this estimate is [0.068, 0.203]. Since 0 doesn't fall within this interval, we reject the null hypothesis of no effect since the result is statistically significant. This result agrees with the previous naive OLS result, which suggested that enrollment in Medicaid increases participants' chances of feeling that their medical needs are met. The IV estimated effect is larger, with a larger standard error as well.
