@@ -1,11 +1,13 @@
 ---
 title: "Problem Set 4"
-author: "Your Name - Net ID - Section Number "
+author: "Andrew Shao - as13381 - 005 "
 date: "Due Dec 13, 2023"
 output:
   pdf_document: default
 header-includes: 
   - \usepackage{tikz}
+  - \usepackage{fvextra}
+  - \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
 ---
 
 This homework must be turned in on Brightspace by Dec. 13 2023. It must be your own work, and your own work only -- you must not copy anyone's work, or allow anyone to copy yours. This extends to writing code. You may consult with others, but when you write up, you must do so alone.
@@ -70,26 +72,27 @@ Estimate the intent-to-treat effects of being selected to sign up for Medicaid o
 
 ```{r}
 # Estimate the ITT on elevated blood pressure
-
+lm_robust(tab2bp_hyper ~ treatment, data = data)
 ```
-
+The estimated effect is -0.0016 with a confidence interval of [-0.0146, 0.0114]. This interval includes 0, so we do not reject the null hypothesis of no effect since this result is not statistically significant. We conclude that being selected to sign up for Medicaid has no effect on elevated blood pressure.
 
 ```{r, warnings = F}
 # Estimate the ITT on depression
-
+lm_robust(tab2phqtot_high ~ treatment, data = data)
 ```
-
+The estimated effect is -0.0349 with a confidence interval of [-0.051, -0.0188]. This interval doesn't include 0, so we reject the null hypothesis of no effect since this result is statistically significant. We conclude that being selected to sign up for Medicaid makes it less likely to be depressed.
 
 ```{r, warnings = F}
 # Estimate the ITT on catastrophic expenditures
-
+lm_robust(tab4_catastrophic_exp_inp ~ treatment, data = data)
 ```
-
+The estimated effect is -0.0153 with a confidence interval of [-0.0229, -0.00766]. This interval doesn't include 0, so we reject the null hypothesis of no effect since this result is statistically significant. We conclude that being selected to sign up for Medicaid makes it less likely to have catastrophic medical expenditure.
 
 ```{r, warnings = F}
 # Estimate the ITT on "needs met"
+lm_robust(tab5_needmet_med_inp ~ treatment, data = data)
 ```
-
+The estimated effect is 0.0345 with a confidence interval of [0.0173, 0.0516]. This interval doesn't include 0, so we reject the null hypothesis of no effect since this result is statistically significant. We conclude that being selected to sign up for Medicaid makes it more likely for patients feel their medical needs are met.
 
 
 ## Question B (25 points)
@@ -100,25 +103,30 @@ Suppose that researchers actually wanted to estimate the effect of Medicaid enro
 
 ```{r}
 # Estimate the Naive OLS effect on elevated blood pressure
+lm_robust(tab2bp_hyper ~ ohp_all_ever_admin, data = data)
 ```
-
+The estimated effect is -0.0181 with a confidence interval of [-0.0321, -0.00401]. This interval doesn't include 0, so we reject the null hypothesis of no effect since this result is statistically significant. We conclude that being enrolled in Medicaid makes it less likely to have elevated blood pressure.
 
 ```{r, warnings = F}
 # Estimate the Naive OLS effect on depression
+lm_robust(tab2phqtot_high ~ ohp_all_ever_admin, data = data)
 ```
-
+The estimated effect is 0.0493 with a confidence interval of [0.0312, 0.0674]. This interval doesn't include 0, so we reject the null hypothesis of no effect since this result is statistically significant. We conclude that being enrolled in Medicaid makes it more likely to be depressed.
 
 
 ```{r, warnings = F}
 # Estimate the Naive OLS effect on catastrophic expenditures
+lm_robust(tab4_catastrophic_exp_inp ~ ohp_all_ever_admin, data = data)
 ```
-
+The estimated effect is -0.0107 with a confidence interval of [-0.0187, -0.00278]. This interval doesn't include 0, so we reject the null hypothesis of no effect since this result is statistically significant. We conclude that being enrolled in Medicaid makes it less likely to have catastrophic medical expenditure.
 
 ```{r, warnings = F}
 # Naive OLS estimate on needs met
+lm_robust(tab5_needmet_med_inp ~ ohp_all_ever_admin, data = data)
 ```
+The estimated effect is 0.0613 with a confidence interval of [0.0427, 0.0799]. This interval doesn't include 0, so we reject the null hypothesis of no effect since this result is statistically significant. We conclude that being enrolled in Medicaid makes it more likely for patients feel their medical needs are met.
 
-
+These might be biased estimates because unobserved confounders may be present since enrollment is not done randomly. These confounders would affect both patient outcome and the ability for patients to enroll in Medicaid. For example, there may be socioeconomic factors (such as poverty) that make certain people more eligible to enroll in Medicaid, that also generally negatively affect peoples' health outcomes.
 
 ## Question C (25 points)
 
@@ -130,11 +138,15 @@ Consider that not everyone who was selected to apply for Medicaid actually ended
 
 ```{r, warnings = F}
 # First Stage OLS
-
+linreg <- lm_robust(ohp_all_ever_admin ~ treatment, data = data)
+tidy(linreg)
+```
+```{r}
 # null model (compliance given an intercept only model)
 null_mod<-lm_robust(ohp_all_ever_admin ~ 1, data=data)
 
 # F - Stat for Instrument Strength (use waldtest)
+waldtest(linreg, null_mod, test = 'F')
 ```
 
 
